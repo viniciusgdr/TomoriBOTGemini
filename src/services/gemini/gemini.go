@@ -1,11 +1,9 @@
 package geminiServices
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"os"
 	"strings"
 
@@ -52,7 +50,40 @@ type Response struct {
 	Command string `json:"command"`
 }
 
-var prompt = ""
+var promptParts = []string{
+	"Você é um robô para o WhatsApp feito por Vinicius que se chama Tomori (sexo feminino).\nSua missão é ajudar o usuário o máximo possível com base no que ele pedir. \n\nComandos:\nPLAY: É usado para baixar músicas ou áudios da Plataforma do Youtube Music em MP3 com base em um link do youtube ou texto. Tente aprimorar o que o usuário pediu caso seja um texto como por exemplo em um input \"Gostava tanto de você\" que é uma música de Tim Maia, ou seja, o retorno na query deveria ser \"Gostava tanto de você - Tim Maia\" (apenas faça isso com musicas famosas). (CASO USUÁRIO INFORME UM LINK VALIDE ELE) (CASO USUÁRIO INFORME UM TEXTO, NÃO RETORNAR LINK NA QUERY). \n\nYTMP4: Usado para baixar videos do youtube com base em um link do youtube ou texto que será a string.\n\nCaso você não ache nada relacionado, tente procurar na internet para responder de uma forma concisa.\n\n\n\nVocê tem alguns comandos predefinidos feitos pelo nosso sistema que irá integrar a AI. Com isso, você deverá retornar obrigatoriamente no o output no formato JSON com a message, query (argumentos do comando (string)) e o command (comando relacionado (string)).",
+	"input: Tomori, toque Mary on a Cross",
+  "output: {\n  \"message\": \"Claro, aqui está a música Mary on a Cross - Ghost\",\n  \"query\": \"Mary on a Cross - Ghost\",\n  \"command\": \"PLAY\"\n}",
+  "input: Tomori, baixe para mim: https://www.youtube.com/watch?v=mNWt8j9e-Zs",
+  "output: {\n  \"message\": \"Claro, irei baixar para você!\",\n  \"query\": \"https://www.youtube.com/watch?v=mNWt8j9e-Zs\",\n  \"command\": \"PLAY\"\n}",
+  "input: Tomori, baixe para mim e me envie em video https://www.youtube.com/watch?v=mNWt8j9e-Zs",
+  "output: {\n  \"message\": \"Claro, irei baixar para você!\",\n  \"query\": \"https://www.youtube.com/watch?v=mNWt8j9e-Zs\",\n  \"command\": \"YTMP4\"\n}",
+  "input: Tomori, como foi a segunda guerra mundial?",
+  "output: {\n  \"message\": \"A Segunda Guerra Mundial foi um conflito global que ocorreu de 1939 a 1945, envolvendo a maioria das nações do mundo, incluindo todas as grandes potências. Foi o conflito mais mortífero da história da humanidade, com mais de 70 milhões de pessoas mortas. A guerra começou com a invasão da Polônia pela Alemanha nazista em 1º de setembro de 1939 e terminou com a rendição do Japão em 15 de agosto de 1945.\",\n  \"query\": \"Como foi a segunda guerra mundial?\",\n  \"command\": null\n}",
+  "input: Tomori, o que você pode fazer?",
+  "output: {\n  \"message\": \"Eu sou Tomori, uma assistente virtual para o WhatsApp. Posso ajudá-lo com as seguintes tarefas:\\n\\n* **Tocar música:** Basta me dizer o nome da música ou artista que você deseja ouvir e eu a encontrarei no YouTube Music e enviarei para você.\\n* **Baixar músicas:** Se você quiser baixar uma música em MP3, basta me enviar o link do YouTube ou o nome da música e eu a baixarei para você.\\n* **Baixar vídeos:** Se você quiser baixar um vídeo do YouTube, basta me enviar o link e eu o baixarei para você.\\n* **Informações gerais:** Se você tiver alguma dúvida sobre qualquer assunto, basta me perguntar e eu tentarei encontrar a resposta para você.\",\n  \"query\": null,\n  \"command\": null\n}",
+  "input: Tomori, quem é MC Estudante",
+  "output: {\n  \"message\": \"MC Estudante é um rapper brasileiro nascido em 1999, conhecido por suas letras críticas e engajadas. Ele ganhou destaque em 2018 com a música \\\"Matemática\\\", que viralizou nas redes sociais e chamou a atenção para sua mensagem de protesto contra a desigualdade social e a violência policial.\",\n  \"query\": \"Quem é MC Estudante?\",\n  \"command\": null\n}",
+}
+
+var safetySettings = []*genai.SafetySetting{
+	{
+		Category: genai.HarmCategoryHarassment,
+		Threshold: genai.HarmBlockOnlyHigh,
+	},
+	{
+		Category: genai.HarmCategoryHateSpeech,
+		Threshold: genai.HarmBlockOnlyHigh,
+	},
+	{
+		Category: genai.HarmCategorySexuallyExplicit,
+		Threshold: genai.HarmBlockOnlyHigh,
+	},
+	{
+		Category: genai.HarmCategoryDangerousContent,
+		Threshold: genai.HarmBlockNone,
+	},
+}
 
 func GeminiChat(input string, history []*genai.Content) (*Response, error) {
 	ctx := context.Background()
@@ -65,10 +96,19 @@ func GeminiChat(input string, history []*genai.Content) (*Response, error) {
 	// For text-only input, use the gemini-pro model
 	model := client.GenerativeModel("gemini-pro")
 	// Initialize the chat
+	model.SafetySettings = safetySettings
 	cs := model.StartChat()
 	cs.History = history
 
-	resp, err := cs.SendMessage(ctx, genai.Text(prompt), genai.Text("input: "+input))
+	parts := []genai.Part{}
+
+	for _, part := range promptParts {
+		parts = append(parts, genai.Text(part))
+	}
+
+	parts = append(parts, genai.Text("input: "+input), genai.Text("output: "))
+
+	resp, err := cs.SendMessage(ctx, parts...)
 	if err != nil {
 		return nil, err
 	}
@@ -94,95 +134,6 @@ func GeminiChat(input string, history []*genai.Content) (*Response, error) {
 	message = strings.TrimSpace(message)
 	var response response
 	err = json.Unmarshal([]byte(message), &response)
-	if err != nil {
-		return nil, err
-	}
-
-	fmt.Println(response)
-	var res Response
-	if response.Message != nil {
-		res.Message = *response.Message
-	}
-	if response.Query != nil {
-		res.Query = *response.Query
-	}
-	if response.Command != nil {
-		res.Command = *response.Command
-	}
-
-	return &res, nil
-}
-
-func gemini(input string) (*Response, error) {
-	URL := "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro-001:generateContent?key=" + os.Getenv("GEMINI_APIKEY")
-	data := RequestBody{
-		Contents: []Content{
-			{
-				Parts: []Part{
-					{Text: prompt},
-					{Text: "input: " + input},
-				},
-			},
-		},
-		GenerationConfig: GenerationConfig{
-			Temperature:     0.9,
-			TopK:            1,
-			TopP:            1,
-			MaxOutputTokens: 1512,
-			StopSequences:   []string{},
-		},
-		SafetySettings: []SafetySettings{
-			{Category: "HARM_CATEGORY_HARASSMENT", Threshold: "BLOCK_ONLY_HIGH"},
-			{Category: "HARM_CATEGORY_HATE_SPEECH", Threshold: "BLOCK_ONLY_HIGH"},
-			{Category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", Threshold: "BLOCK_MEDIUM_AND_ABOVE"},
-			{Category: "HARM_CATEGORY_DANGEROUS_CONTENT", Threshold: "BLOCK_ONLY_HIGH"},
-		},
-	}
-
-	jsonData, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := http.Post(URL, "application/json", bytes.NewBuffer(jsonData))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	// convert to interface
-	var result map[string]interface{}
-	err = json.NewDecoder(resp.Body).Decode(&result)
-	if err != nil {
-		return nil, err
-	}
-	if result["error"] != nil {
-		return nil, fmt.Errorf("error: %v", result["error"])
-	}
-	candidates := result["candidates"].([]interface{})
-	if len(candidates) == 0 {
-		return nil, fmt.Errorf("no candidates found")
-	}
-	firstCandidate := candidates[0].(map[string]interface{})
-	if firstCandidate["content"] == nil {
-		return nil, fmt.Errorf("no content found")
-	}
-	content := firstCandidate["content"].(map[string]interface{})
-	parts := content["parts"].([]interface{})
-	if len(parts) == 0 {
-		return nil, fmt.Errorf("no parts found")
-	}
-	text := ""
-	for _, part := range parts {
-		text += part.(map[string]interface{})["text"].(string)
-	}
-
-	text = strings.ReplaceAll(text, "```json", "")
-	text = strings.ReplaceAll(text, "```", "")
-	text = strings.TrimSpace(text)
-
-	var response response
-	err = json.Unmarshal([]byte(text), &response)
 	if err != nil {
 		return nil, err
 	}
