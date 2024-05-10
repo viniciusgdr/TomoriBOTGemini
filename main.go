@@ -6,27 +6,24 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+	loader "tomoribot-geminiai-version/src/main"
+	"tomoribot-geminiai-version/src/utils"
 
 	"github.com/joho/godotenv"
 )
 
 func main() {
+	fmt.Println("Initializing...")
 	err := godotenv.Load()
 	if err != nil {
 		fmt.Println("Error loading .env file")
 		panic(err)
 	}
 	time.Local, _ = time.LoadLocation("America/Sao_Paulo")
-	ClearCache()
-	CheckPathDb()
-	db, err := LoadDB()
-	if err != nil {
-		fmt.Println(err)
-		panic(err)
-	}
-	fmt.Println("Initializing...")
+	utils.ClearCache()
+	utils.CheckPathDb()
 
-	StartConnection(os.Getenv("PHONE_NUMBER"), db)
+	loader.StartConnection(os.Getenv("PHONE_NUMBER"), nil)
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)

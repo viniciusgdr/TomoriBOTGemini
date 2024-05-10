@@ -1,4 +1,4 @@
-package main
+package loader
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"time"
 	"tomoribot-geminiai-version/client"
 	"tomoribot-geminiai-version/src/factories"
+	"tomoribot-geminiai-version/src/handlers"
 
 	"go.mau.fi/whatsmeow/types/events"
 	"gorm.io/gorm"
@@ -43,7 +44,7 @@ func StartConnection(
 			}
 		case *events.Message:
 			{
-				fmt.Println("📩 Message received from " + e.Info.ID)
+				go handlers.MessageHandler(clientType, e)
 			}
 		}
 	})
