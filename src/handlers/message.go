@@ -7,10 +7,23 @@ import (
 	"tomoribot-geminiai-version/client"
 	command_types "tomoribot-geminiai-version/src/commands/types"
 	constants "tomoribot-geminiai-version/src/defaults"
+	"tomoribot-geminiai-version/src/handlers/actions"
 	infra_whatsmeow_utils "tomoribot-geminiai-version/src/infra/whatsapp/whatsmeow/utils"
 
+	"go.mau.fi/whatsmeow/binary/proto"
+	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"
 )
+
+func IsMentionedBot(QuotedMsgContextInfo *proto.ContextInfo, botJid types.JID) bool {
+	if QuotedMsgContextInfo == nil {
+		return false
+	}
+	if QuotedMsgContextInfo.Participant == nil {
+		return false
+	}
+	return *QuotedMsgContextInfo.Participant == botJid.String()
+}
 
 func MessageHandler(client *client.Client, message *events.Message) {
 	processmentStartedTime := time.Now()
@@ -38,25 +51,24 @@ func MessageHandler(client *client.Client, message *events.Message) {
 	}
 
 	body := infra_whatsmeow_utils.GetMessageBody(message.Message)
-	fmt.Println(body)
+	quotedMsgInfo := infra_whatsmeow_utils.GetQuotedMessageContextInfo(message.Message)
 
-	if !strings.HasPrefix(strings.ToLower(body), "tomori,") {
+	if !strings.HasPrefix(strings.ToLower(body), "tomori,") && !IsMentionedBot(quotedMsgInfo, botJid) {
 		return
 	}
 
 	messageType := infra_whatsmeow_utils.GetMessageType(message.Message)
-	quotedMsg := infra_whatsmeow_utils.GetQuotedMessage(message.Message)
 	args := strings.Split(body, " ")
-	query := strings.Join(args, " ")
+	arg := strings.Join(args, " ")
 	commandProps := &command_types.CommandProps{
 		Client:               client,
 		Args:                 args,
 		Message:              message,
-		QuotedMsg:            quotedMsg,
-		QuotedMsgContextInfo: infra_whatsmeow_utils.GetQuotedMessageContextInfo(message.Message),
-		Query:                query,
+		QuotedMsgContextInfo: quotedMsgInfo,
+		Arg:                  arg,
 		Timestamp:            processmentStartedTime,
 		MessageType:          messageType,
 	}
-	fmt.Println("🔍 Command received: " + query, commandProps.Query)
+	fmt.Println("🔍 Command received: "+arg)
+	actions.ProcessorGeminiAI(commandProps)
 }

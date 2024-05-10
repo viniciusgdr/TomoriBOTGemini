@@ -11,8 +11,6 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-var ProcessStarted time.Time
-
 type Command struct {
 	Details DetailsCommand
 	Execute func(commandProps *CommandProps)
@@ -54,9 +52,8 @@ type CommandProps struct {
 	Client               *client.Client
 	Args                 []string
 	Message              *events.Message
-	QuotedMsg            *waProto.Message
 	QuotedMsgContextInfo *waProto.ContextInfo
-	Query                string
+	Arg                  string
 	Timestamp            time.Time
 	UserChat             bool
 	BotChat              bool
