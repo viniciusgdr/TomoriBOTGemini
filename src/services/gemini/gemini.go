@@ -94,6 +94,14 @@ var promptParts = []string{
   "output: {\n  \"message\": \"Claro, deixe-me identificar a música para você!\",\n  \"query\": null,\n  \"command\": \"SHAZAM\"\n}",
   "input: Tomori, faça essa figurinha quadrada e sem fundo",
   "output: {\n  \"message\": \"Claro, vou fazer um sticker quadrado e sem fundo e te enviar!\",\n  \"query\": \"--no-background\",\n  \"command\": \"STICKER2\"\n}",
+  "input: Oi",
+  "output: {\n  \"message\": \"Olá! Sou Tomori, uma assistente virtual do WhatsApp. Como posso ajudá-lo hoje?\",\n  \"query\": null,\n  \"command\": null\n}",
+  "input: Quem é?",
+  "output: {\n  \"message\": \"Sou Tomori, uma assistente virtual do WhatsApp. Como posso ajudá-lo hoje?\",\n  \"query\": null,\n  \"command\": null\n}",
+  "input: Como você vai?",
+  "output: {\n  \"message\": \"Estou bem, obrigada por perguntar. Estou aqui para ajudá-lo com o que precisar.\",\n  \"query\": null,\n  \"command\": null\n}",
+  "input: Como foi formado o atentado das torres gêmeas?",
+  "output: {\n  \"message\": \"Os ataques de 11 de setembro, também conhecidos como os ataques das Torres Gêmeas, foram uma série de quatro ataques terroristas coordenados pelo grupo terrorista islâmico Al-Qaeda contra os Estados Unidos na manhã de 11 de setembro de 2001. Os ataques resultaram em 2.977 mortes, mais de 25.000 feridos e danos substanciais a longo prazo. saúde consequências, além de pelo menos US$ 10 bilhões em infraestrutura e danos à propriedade. Os ataques foram o incidente mais mortal do corpo de bombeiros e aplicação da lei na história dos EUA e o único incidente para resultar na destruição de vários arranha-céus.\",\n  \"query\": null,\n  \"command\": null\n}",
 }
 
 var safetySettings = []*genai.SafetySetting{

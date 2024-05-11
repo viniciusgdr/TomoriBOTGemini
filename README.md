@@ -60,10 +60,13 @@ PHONE_NUMBER=YOUR_PHONE_NUMBER
   <img src="/public/img2.jpeg" alt="Demo" width="48%" />
 </div>
 
+## Prompt
+Para alterar o prompt, basta entrar no arquivo [gemini.go](src/services/gemini/gemini.go) e alterar o array promptParts.
+
 ## Arquitetura Robusta
 O TomoriBOT foi desenvolvido com uma arquitetura robusta, utilizando a API da Gemini (Google) para responder os usuários de forma inteligente e natural. Além disso, ele foi desenvolvido usando os princípios do Clean Architecture, que permite a fácil manutenção e escalabilidade do projeto.
 Os módulos em Python e Node foram feitos para acelerar o desenvolvimento de diversos recursos que a linguagem oferece, como reconhecimento de músicas (Em Python) e Manipulação de arquivos Webp (Em Node).
 *A Lib Whatsmeow não foi desacoplada 100% pelo fato que não tem outra lib que faça o mesmo trabalho.
 
 ## Privacidade
-O TomoriBOT respeita a privacidade dos usuários e não armazena nenhuma informação pessoal. Todas as mensagens trocadas com o bot são processadas em tempo real e não são armazenadas em nenhum banco de dados (ainda). Além disso, o bot não compartilha nenhuma informação com terceiros e não exibe anúncios. Todo conteúdo que é efetuado download de terceiros é provido de APIs públicas.
+O TomoriBOT respeita a privacidade dos usuários e não armazena nenhuma informação pessoal. Todas as mensagens trocadas com o bot são processadas em tempo real e não são armazenadas em nenhum banco de dados (ainda). Além disso, o bot não compartilha nenhuma informação com terceiros e não exibe anúncios. Todo conteúdo que é efetuado download de terceiros é provido de APIs públicas. Para melhor interação, apenas armazenamos os últimos 10 comandos enviados ao bot.
