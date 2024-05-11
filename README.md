@@ -18,6 +18,23 @@ Além disso, muitas tarefas que antes eram feitas manualmente, agora podem ser f
 - ✅ Baixar vídeos do Instagram (Reels)
 - ✅ Baixar vídeos do TikTok
 
+## Instalação
+Para instalar o TomoriBOT, você precisa ter o Node.js, Python, FFmpeg e o Go instalados em sua máquina. Após isso, basta clonar o repositório e instalar as dependências.
+
+```bash
+# Clone o repositório
+$ git clone https://github.com/viniciusgdr/TomoriBOTGemini
+$ cd TomoriBOTGemini
+$ bash installer.sh
+```
+
+## Configuração
+Para configurar o TomoriBOT, você precisa criar um arquivo `.env` na raiz do projeto e adicionar as seguintes variáveis de ambiente.
+
+```env
+GEMINI_APIKEY=YOUR_API_KEY
+PHONE_NUMBER=YOUR_PHONE_NUMBER
+```
 ## Demonstração
 <div style="display: flex; flex-wrap: wrap;gap: 3px">
   <img src="/public/img1.jpeg" alt="Demo" width="48%" />
