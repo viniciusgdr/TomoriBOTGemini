@@ -6,9 +6,11 @@ TomoriBOT é um bot de WhatsApp alimentado por IA, que utiliza a API da Gemini (
 - [Soluções/Utilidades](#soluçõesutilidades)
 - [Recursos](#recursos)
 - [Eficiência](#eficiência)
+- [Tecnologias Utilizadas](#tecnologias-utilizadas)
 - [Instalação](#instalação)
 - [Configuração](#configuração)
 - [Demonstração](#demonstração)
+- [Prompt](#prompt)
 - [Arquitetura Robusta](#arquitetura-robusta)
 - [Privacidade](#privacidade)
 
@@ -33,6 +35,15 @@ O TomoriBOT foi desenvolvido para ser eficiente e rápido, permitindo que os usu
 
 - 🚀 Suporta Chats Privados
 - 🚀 Suporta Grupos (Digitando "Tomori," na frente)
+
+## Tecnologias Utilizadas
+- Whatsmeow (API de WhatsApp)
+- Gemini
+- FFmpeg (Conversão de vídeos/stickers)
+- Webpmux (Manipulação de stickers)
+- Youtube-dl (Download de vídeos)
+- ShazamAPI (Reconhecimento de músicas)
+- RemBG (Remoção de fundo de imagens)
 
 ## Instalação
 Para instalar o TomoriBOT, você precisa ter o Node.js, Python, FFmpeg e o Go instalados em sua máquina. Após isso, basta clonar o repositório e instalar as dependências.
