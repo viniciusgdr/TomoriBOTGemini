@@ -22,6 +22,12 @@ func ProcessorGeminiAI(props *command_types.CommandProps) {
 		history[keyHistory] = history[keyHistory][1:]
 	}
 
+	// if props.QuotedMsg != nil {
+	// 	props.Arg += " (Additional Context: MENTIONED)"
+	// } else {
+	// 	props.Arg = " (Additional Context: NOT MENTIONED)"
+	// }
+
 	response, err := geminiServices.MakeLoopCallsIfErrorGemini(props.Arg, history[keyHistory], 0)
 	if err != nil {
 		fmt.Println("Error in geminiServices.MakeLoopCallsIfErrorGemini", err)
@@ -45,7 +51,9 @@ func ProcessorGeminiAI(props *command_types.CommandProps) {
 	}
 
 	if response.Command != "" {
-		command, _ := commands.GetCommand(response.Command)
-		command.Execute(props)
+		command, exists := commands.GetCommand(response.Command)
+		if exists {
+			command.Execute(props)
+		}
 	}
 }

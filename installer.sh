@@ -32,7 +32,7 @@ else
 fi
 
 
-pip install -r requirements.txt
+pip install -r requirements.txt --break-system-packages
 cd ..
 
 echo "Checking if ffmpeg is installed..."

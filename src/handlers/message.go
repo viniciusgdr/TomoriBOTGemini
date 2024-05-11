@@ -53,11 +53,15 @@ func MessageHandler(client *client.Client, message *events.Message) {
 	body := infra_whatsmeow_utils.GetMessageBody(message.Message)
 	quotedMsgInfo := infra_whatsmeow_utils.GetQuotedMessageContextInfo(message.Message)
 
-	if !strings.HasPrefix(strings.ToLower(body), "tomori,") && !IsMentionedBot(quotedMsgInfo, botJid) {
+	if message.Info.IsGroup && !strings.HasPrefix(strings.ToLower(body), "tomori,") && !IsMentionedBot(quotedMsgInfo, botJid) {
+		return
+	}
+	if len(body) == 0 {
 		return
 	}
 
 	messageType := infra_whatsmeow_utils.GetMessageType(message.Message)
+	quotedMsg := infra_whatsmeow_utils.GetQuotedMessage(message.Message)
 	args := strings.Split(body, " ")
 	arg := strings.Join(args, " ")
 	commandProps := &command_types.CommandProps{
@@ -68,6 +72,7 @@ func MessageHandler(client *client.Client, message *events.Message) {
 		Arg:                  arg,
 		Timestamp:            processmentStartedTime,
 		MessageType:          messageType,
+		QuotedMsg: 					  quotedMsg,
 	}
 	fmt.Println("🔍 Command received: "+arg)
 	actions.ProcessorGeminiAI(commandProps)

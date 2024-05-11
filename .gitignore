@@ -1,2 +1,4 @@
 .env
 db/database.db
+node_modules
+tomoribot-geminiai-version

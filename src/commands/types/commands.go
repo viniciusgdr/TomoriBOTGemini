@@ -52,6 +52,7 @@ type CommandProps struct {
 	Client               *client.Client
 	Args                 []string
 	Message              *events.Message
+	QuotedMsg 					 *waProto.Message
 	QuotedMsgContextInfo *waProto.ContextInfo
 	Arg                  string
 	Timestamp            time.Time

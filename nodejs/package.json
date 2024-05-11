@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "node-webpmux": "^3.2.0",
+    "yargs": "^17.7.2"
+  }
+}
