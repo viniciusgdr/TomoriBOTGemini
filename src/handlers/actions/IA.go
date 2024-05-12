@@ -3,6 +3,7 @@ package actions
 import (
 	"fmt"
 	"tomoribot-geminiai-version/src/commands"
+	"tomoribot-geminiai-version/src/commands/tts"
 	command_types "tomoribot-geminiai-version/src/commands/types"
 
 	geminiServices "tomoribot-geminiai-version/src/services/gemini"
@@ -47,7 +48,19 @@ func ProcessorGeminiAI(props *command_types.CommandProps) {
 				genai.Text(response.Message),
 			},
 		})
-		props.Reply(response.Message)
+		if response.SendInAudio {
+			if response.Query != "" {
+				props.Arg = response.Query
+			} else {
+				props.Arg = response.Message
+			}
+			tts.Execute(props)
+		} else {
+			props.Reply(response.Message)
+		}
+	} else if response.SendInAudio && response.Query != "" {
+		props.Arg = response.Query
+		tts.Execute(props)
 	}
 
 	if response.Command != "" {

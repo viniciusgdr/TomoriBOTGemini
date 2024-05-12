@@ -1,5 +1,5 @@
 # TomoriBOT WhatsApp - Alimentado por IA
-TomoriBOT é um bot de WhatsApp alimentado por IA, que utiliza a API da Gemini (Google) para responder os usuários de forma inteligente e natural. Nele, você pode interagir com o bot através de mensagens de texto e baixar músicas do YouTube de forma rápida e prática.
+TomoriBOT é um bot de WhatsApp alimentado por IA, que utiliza a API da Gemini (Google) para responder os usuários de forma inteligente e natural usando textos ou audios. Nele, você pode interagir com o bot através de mensagens de texto e baixar músicas do YouTube de forma rápida e prática.
 <img src="/public/image-banner.png" alt="Banner"/>
 
 ## Sumário
@@ -29,6 +29,7 @@ Além disso, muitas tarefas que antes eram feitas manualmente, agora podem ser f
 - ✅ Reconhecer músicas (Shazam)
 - ✅ Baixar vídeos do Instagram (Reels)
 - ✅ Baixar vídeos do TikTok
+- ✅ Responde em áudios!
 
 ## Eficiência	
 O TomoriBOT foi desenvolvido para ser eficiente e rápido, permitindo que os usuários interajam com o bot de forma rápida e prática. Com ele, você pode baixar músicas do YouTube em poucos segundos, sem precisar acessar sites ou instalar programas. Além disso, o bot é capaz de reconhecer músicas em tempo real, permitindo que você descubra o nome da música que está tocando no ambiente.
@@ -44,6 +45,7 @@ O TomoriBOT foi desenvolvido para ser eficiente e rápido, permitindo que os usu
 - Youtube-dl (Download de vídeos)
 - ShazamAPI (Reconhecimento de músicas)
 - RemBG (Remoção de fundo de imagens)
+- gTTS (Text to Speech)
 
 ## Instalação
 Para instalar o TomoriBOT, você precisa ter o Node.js, Python, FFmpeg e o Go instalados em sua máquina. Após isso, basta clonar o repositório e instalar as dependências.
@@ -63,6 +65,7 @@ GEMINI_APIKEY=YOUR_API_KEY
 PHONE_NUMBER=YOUR_PHONE_NUMBER
 ```
 ## Demonstração
+<img src="/public/img6.png" alt="Demo" />
 <div style="display: flex; flex-wrap: wrap;gap: 3px">
   <img src="/public/img1.jpeg" alt="Demo" width="48%" />
   <img src="/public/img5.jpeg" alt="Demo" width="48%" />
