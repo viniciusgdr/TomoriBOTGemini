@@ -45,7 +45,6 @@ O TomoriBOT foi desenvolvido para ser eficiente e rápido, permitindo que os usu
 - 🚀 Suporta Grupos (Digitando "Tomori," na frente)
 
 ## Tecnologias Utilizadas
-
 - Whatsmeow (API de WhatsApp)
 - Gemini
 - FFmpeg (Conversão de vídeos/stickers)
