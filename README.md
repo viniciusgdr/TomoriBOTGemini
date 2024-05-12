@@ -50,7 +50,7 @@ O TomoriBOT foi desenvolvido para ser eficiente e rápido, permitindo que os usu
 - Gemini
 - FFmpeg (Conversão de vídeos/stickers)
 - Webpmux (Manipulação de stickers)
-- Youtube-dl (Download de vídeos)
+- YoutubeAPI (Download de vídeos)
 - ShazamAPI (Reconhecimento de músicas)
 - RemBG (Remoção de fundo de imagens)
 - gTTS (Text to Speech)
@@ -78,15 +78,14 @@ PHONE_NUMBER=YOUR_PHONE_NUMBER
 ## Demonstração
 
 <div style="display: flex; flex-direction: column; padding-bottom: 4px">
-<img src="/public/img6.png" alt="Demo" />
-<img src="/public/img7.png" alt="Demo" />
-<img src="/public/img8.png" alt="Demo" />
+<img src="/public/img6.png" alt="Demo" height="80%" />
+<img src="/public/img7.png" alt="Demo" height="80%" />
+<img src="/public/img8.png" alt="Demo" height="80%" />
 </div>
-<div style="display: flex; flex-wrap: wrap;gap: 3px">
-  <img src="/public/img1.jpeg" alt="Demo" width="48%" />
-  <img src="/public/img5.jpeg" alt="Demo" width="48%" />
-  <img src="/public/img4.jpeg" alt="Demo" width="48%" />
-  <img src="/public/img3.jpeg" alt="Demo" width="48%" />
+<div style="display: flex; flex-wrap: wrap;gap: 4px">
+  <img src="/public/img1.jpeg" alt="Demo" width="32%" />
+  <img src="/public/img5.jpeg" alt="Demo" width="32%" />
+  <img src="/public/img4.jpeg" alt="Demo" width="32%" />
 </div>
 <img src="/public/img9.png" alt="Demo" />
 
