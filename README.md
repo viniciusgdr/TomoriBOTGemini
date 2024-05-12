@@ -65,7 +65,10 @@ GEMINI_APIKEY=YOUR_API_KEY
 PHONE_NUMBER=YOUR_PHONE_NUMBER
 ```
 ## Demonstração
+<div style="display: flex; flex-direction: column; padding-bottom: 4px">
 <img src="/public/img6.png" alt="Demo" />
+<img src="/public/img7.png" alt="Demo" />
+</div>
 <div style="display: flex; flex-wrap: wrap;gap: 3px">
   <img src="/public/img1.jpeg" alt="Demo" width="48%" />
   <img src="/public/img5.jpeg" alt="Demo" width="48%" />
