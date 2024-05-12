@@ -9,7 +9,7 @@ import (
 	constants "tomoribot-geminiai-version/src/defaults"
 	"tomoribot-geminiai-version/src/handlers/actions"
 	infra_whatsmeow_utils "tomoribot-geminiai-version/src/infra/whatsapp/whatsmeow/utils"
-
+	speechtotextServices "tomoribot-geminiai-version/src/services/speechtotext"
 	"go.mau.fi/whatsmeow/binary/proto"
 	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"
@@ -56,11 +56,13 @@ func MessageHandler(client *client.Client, message *events.Message) {
 	if message.Info.IsGroup && !strings.HasPrefix(strings.ToLower(body), "tomori,") && !IsMentionedBot(quotedMsgInfo, botJid) {
 		return
 	}
-	if len(body) == 0 {
+
+	messageType := infra_whatsmeow_utils.GetMessageType(message.Message)
+
+	if len(body) == 0 && messageType != "audio" {
 		return
 	}
 
-	messageType := infra_whatsmeow_utils.GetMessageType(message.Message)
 	quotedMsg := infra_whatsmeow_utils.GetQuotedMessage(message.Message)
 	args := strings.Split(body, " ")
 	arg := strings.Join(args, " ")
@@ -75,5 +77,22 @@ func MessageHandler(client *client.Client, message *events.Message) {
 		QuotedMsg: 					  quotedMsg,
 	}
 	fmt.Println("🔍 Command received: "+arg)
+	if messageType == "audio" {
+		audioMessage := commandProps.Message.Message.GetAudioMessage()
+		mediaBytes, err := client.Client.Download(audioMessage)
+		if err != nil {
+			commandProps.Reply("Ocorreu uma falha ao tratarmos o áudio, tente novamente mais tarde!")
+			return
+		}
+		go commandProps.React("🔊")
+
+		text, err := speechtotextServices.SpeechToText(mediaBytes)
+		if err != nil {
+			commandProps.Reply("Ocorreu uma falha ao tratar o áudio, tente novamente mais tarde!")
+			return
+		}
+		fmt.Println(text)
+		commandProps.Arg = text
+	}
 	actions.ProcessorGeminiAI(commandProps)
 }
