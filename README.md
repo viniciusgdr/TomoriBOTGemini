@@ -75,8 +75,8 @@ PHONE_NUMBER=YOUR_PHONE_NUMBER
   <img src="/public/img5.jpeg" alt="Demo" width="48%" />
   <img src="/public/img4.jpeg" alt="Demo" width="48%" />
   <img src="/public/img3.jpeg" alt="Demo" width="48%" />
-  <img src="/public/img2.jpeg" alt="Demo" width="48%" />
 </div>
+<img src="/public/img9.png" alt="Demo" />
 
 ## Prompt
 Para alterar o prompt, basta entrar no arquivo [gemini.go](src/services/gemini/gemini.go) e alterar o array promptParts.
