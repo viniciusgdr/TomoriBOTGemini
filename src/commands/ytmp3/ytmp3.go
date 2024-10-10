@@ -87,14 +87,14 @@ func Execute(commandProps *command_types.CommandProps) {
 				ExternalAdReply: &waProto.ContextInfo_ExternalAdReplyInfo{
 					Title:                 proto.String(info.Title),
 					MediaType:             waProto.ContextInfo_ExternalAdReplyInfo_VIDEO.Enum(),
-					ThumbnailUrl:          proto.String(`https://i.ytimg.com/vi/` + id + `/0.jpg`),
-					SourceUrl:             proto.String("https://www.youtube.com/watch?v=" + id),
-					MediaUrl:              proto.String("https://www.youtube.com/watch?v=" + id),
+					ThumbnailURL:          proto.String(`https://i.ytimg.com/vi/` + id + `/0.jpg`),
+					SourceURL:             proto.String("https://www.youtube.com/watch?v=" + id),
+					MediaURL:              proto.String("https://www.youtube.com/watch?v=" + id),
 					ShowAdAttribution:     proto.Bool(true),
 					ContainsAutoReply:     proto.Bool(true),
 					RenderLargerThumbnail: proto.Bool(true),
 				},
-				MentionedJid: []string{
+				MentionedJID: []string{
 					commandProps.Message.Info.Sender.ToNonAD().String(),
 				},
 			},

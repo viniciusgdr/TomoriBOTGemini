@@ -133,9 +133,9 @@ Exemplo:
 	if audio != nil || quotedMsgAudio != nil {
 		var ptt bool = false
 		if audio != nil {
-			ptt = *audio.Ptt
+			ptt = *audio.PTT
 		} else {
-			ptt = *quotedMsgAudio.Ptt
+			ptt = *quotedMsgAudio.PTT
 		}
 		sender.SendAudioMessage(
 			commandProps.Client.Client,

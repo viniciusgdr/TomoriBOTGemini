@@ -8,8 +8,8 @@ import (
 	playServices "tomoribot-geminiai-version/src/services/play"
 	web_functions "tomoribot-geminiai-version/src/utils/web"
 
-	waProto "go.mau.fi/whatsmeow/binary/proto"
 	"google.golang.org/protobuf/proto"
+	"go.mau.fi/whatsmeow/proto/waE2E"
 )
 func Details() command_types.DetailsCommand {
 	return command_types.DetailsCommand{
@@ -75,8 +75,8 @@ func Execute(commandProps *command_types.CommandProps) {
 				buffer,
 				&sender.MessageOptions{
 					MimeType: "audio/mpeg",
-					ContextInfo: &waProto.ContextInfo{
-						MentionedJid: []string{
+					ContextInfo: &waE2E.ContextInfo{
+						MentionedJID: []string{
 							commandProps.Message.Info.Sender.ToNonAD().String(),
 						},
 					},
@@ -91,18 +91,18 @@ func Execute(commandProps *command_types.CommandProps) {
 			buffer,
 			&sender.MessageOptions{
 				MimeType: "audio/mpeg",
-				ContextInfo: &waProto.ContextInfo{
-					ExternalAdReply: &waProto.ContextInfo_ExternalAdReplyInfo{
+				ContextInfo: &waE2E.ContextInfo{
+					ExternalAdReply: &waE2E.ContextInfo_ExternalAdReplyInfo{
 						Title:                 proto.String(videoInfo.Title),
-						MediaType:             waProto.ContextInfo_ExternalAdReplyInfo_VIDEO.Enum(),
-						ThumbnailUrl:          proto.String(`https://i.ytimg.com/vi/` + result[lengthRetrys].VideoID + `/0.jpg`),
-						SourceUrl:             proto.String("https://www.youtube.com/watch?v=" + result[lengthRetrys].VideoID),
-						MediaUrl:              proto.String("https://www.youtube.com/watch?v=" + result[lengthRetrys].VideoID),
+						MediaType:             waE2E.ContextInfo_ExternalAdReplyInfo_VIDEO.Enum(),
+						ThumbnailURL:          proto.String(`https://i.ytimg.com/vi/` + result[lengthRetrys].VideoID + `/0.jpg`),
+						SourceURL:             proto.String("https://www.youtube.com/watch?v=" + result[lengthRetrys].VideoID),
+						MediaURL:              proto.String("https://www.youtube.com/watch?v=" + result[lengthRetrys].VideoID),
 						ShowAdAttribution:     proto.Bool(true),
 						ContainsAutoReply:     proto.Bool(true),
 						RenderLargerThumbnail: proto.Bool(true),
 					},
-					MentionedJid: []string{
+					MentionedJID: []string{
 						commandProps.Message.Info.Sender.ToNonAD().String(),
 					},
 				},

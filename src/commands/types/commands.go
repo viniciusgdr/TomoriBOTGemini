@@ -77,9 +77,9 @@ func (props *CommandProps) React(emoji string) (whatsmeow.SendResponse, error) {
 	participant := props.Message.Info.Sender.ToNonAD().String()
 	groupId := props.Message.Info.Chat.ToNonAD().String()
 	messagekey := &waProto.MessageKey{
-		Id:        &props.Message.Info.ID,
+		ID:        &props.Message.Info.ID,
 		FromMe:    proto.Bool(false),
-		RemoteJid: &groupId,
+		RemoteJID: &groupId,
 	}
 	if props.Message.Info.IsGroup {
 		messagekey.Participant = &participant

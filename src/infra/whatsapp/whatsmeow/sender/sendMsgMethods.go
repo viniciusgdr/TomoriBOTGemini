@@ -9,13 +9,14 @@ import (
 	"os/exec"
 	"strings"
 
-	"net/http"
 	infra_whatsmeow_utils "tomoribot-geminiai-version/src/infra/whatsapp/whatsmeow/utils"
 	"tomoribot-geminiai-version/src/utils/hooks"
+	"net/http"
 
 	"github.com/nfnt/resize"
 	"go.mau.fi/whatsmeow"
-	waProto "go.mau.fi/whatsmeow/binary/proto"
+	"go.mau.fi/whatsmeow/proto/waE2E"
+	"go.mau.fi/whatsmeow/proto/waCommon"
 	waTypes "go.mau.fi/whatsmeow/types"
 	"google.golang.org/protobuf/proto"
 )
@@ -71,12 +72,12 @@ func getMimeType(buffer []byte) (string, error) {
 	return mimeType, nil
 }
 
-func SendReaction(WAClient *whatsmeow.Client, jid waTypes.JID, messageKey *waProto.MessageKey, emoji string) (resp whatsmeow.SendResponse, err error) {
+func SendReaction(WAClient *whatsmeow.Client, jid waTypes.JID, messageKey *waCommon.MessageKey, emoji string) (resp whatsmeow.SendResponse, err error) {
 	return WAClient.SendMessage(
 		context.Background(),
 		jid.ToNonAD(),
-		&waProto.Message{
-			ReactionMessage: &waProto.ReactionMessage{
+		&waE2E.Message{
+			ReactionMessage: &waE2E.ReactionMessage{
 				Key:  messageKey,
 				Text: proto.String(emoji),
 			},
@@ -84,146 +85,9 @@ func SendReaction(WAClient *whatsmeow.Client, jid waTypes.JID, messageKey *waPro
 	)
 }
 
-func SendInteractiveMessageV2(WAClient *whatsmeow.Client, jid waTypes.JID, title string, sections []NativeFlowListMessageSection, header *Header) (resp whatsmeow.SendResponse, mountedMessage *waProto.Message, err error) {
-	msgSections := ButtonParamsJsonV2{
-		Title:    "Selecione uma opção",
-		Sections: sections,
-	}
-
-	mountedMessage = &waProto.Message{
-		InteractiveMessage: &waProto.InteractiveMessage{
-			Body: &waProto.InteractiveMessage_Body{
-				Text: proto.String(title),
-			},
-			InteractiveMessage: &waProto.InteractiveMessage_NativeFlowMessage_{
-				NativeFlowMessage: &waProto.InteractiveMessage_NativeFlowMessage{
-					Buttons: []*waProto.InteractiveMessage_NativeFlowMessage_NativeFlowButton{
-					 {
-						Name: proto.String("single_select"),
-						ButtonParamsJson: proto.String(msgSections.toString()),
-					 },
-					},
-					MessageParamsJson: proto.String(""),
-				},
-			},
-		},
-	}
-	if header != nil && header.HasMediaAttachment {
-		upload, mimeType, _ := uploadMedia(WAClient, header.MediaByte, &UploadMediaOptions{})
-		thumbnail, err := ResizeImage(header.MediaByte, 72, 72)
-		if err != nil {
-			thumbnail = []byte{}
-		}
-		mountedMessage.InteractiveMessage.Header = &waProto.InteractiveMessage_Header{
-			Title: proto.String(header.Title),
-			Subtitle: proto.String(header.Subtitle),
-			HasMediaAttachment: proto.Bool(header.HasMediaAttachment),
-			Media: &waProto.InteractiveMessage_Header_ImageMessage{
-				ImageMessage: &waProto.ImageMessage{
-					Mimetype:      proto.String(mimeType),
-					Url:           &upload.URL,
-					DirectPath:    &upload.DirectPath,
-					MediaKey:      upload.MediaKey,
-					JpegThumbnail: thumbnail,
-					FileEncSha256: upload.FileEncSHA256,
-					FileSha256:    upload.FileSHA256,
-					FileLength:    &upload.FileLength,
-				},
-			},
-		}
-	}
-	sendedMsg, err := WAClient.SendMessage(
-		context.Background(),
-		jid.ToNonAD(),
-		mountedMessage,
-	)
-	return sendedMsg, mountedMessage, err
-}
-
-func SendInteractiveMessage(WAClient *whatsmeow.Client, jid waTypes.JID, body string, buttons []InteractiveButtons, header *Header) (resp whatsmeow.SendResponse, mountedMessage *waProto.Message, err error) {
-	mountedButtons := []*waProto.InteractiveMessage_NativeFlowMessage_NativeFlowButton{}
-
-	for _, button := range buttons {
-		if button.Type == ButtonURL {
-			nativeFlowButtonURL := NativeFlowButtonURL{
-				DisplayText: button.DisplayText,
-				URL:         button.ID,
-				MerchantURL: button.ID,
-			}
-			mountedButtons = append(mountedButtons, &waProto.InteractiveMessage_NativeFlowMessage_NativeFlowButton{
-				Name:             proto.String("cta_url"),
-				ButtonParamsJson: proto.String(nativeFlowButtonURL.toString()),
-			})
-		} else if button.Type == ButtonCopy {
-			nativeFlowButtonCopy := NativeFlowButtonCopy{
-				DisplayText: button.DisplayText,
-				ID:          button.ID,
-				CopyCode:    button.ID,
-			}
-			mountedButtons = append(mountedButtons, &waProto.InteractiveMessage_NativeFlowMessage_NativeFlowButton{
-				Name:             proto.String("cta_copy"),
-				ButtonParamsJson: proto.String(nativeFlowButtonCopy.toString()),
-			})
-		} else if button.Type == ButtonReply {
-			nativeFlowButtonReply := NativeFlowButtonReply{
-				DisplayText: button.DisplayText,
-				ID:          button.ID,
-				Disabled:    "false",
-			}
-			mountedButtons = append(mountedButtons, &waProto.InteractiveMessage_NativeFlowMessage_NativeFlowButton{
-				Name:             proto.String("quick_reply"),
-				ButtonParamsJson: proto.String(nativeFlowButtonReply.toString()),
-			})
-		}
-	}
-
-	mountedMessage = &waProto.Message{
-		InteractiveMessage: &waProto.InteractiveMessage{
-			Body: &waProto.InteractiveMessage_Body{
-				Text: proto.String(body),
-			},
-			InteractiveMessage: &waProto.InteractiveMessage_NativeFlowMessage_{
-				NativeFlowMessage: &waProto.InteractiveMessage_NativeFlowMessage{
-					Buttons:           mountedButtons,
-					MessageParamsJson: proto.String(""),
-				},
-			},
-		},
-	}
-	if header != nil && header.MediaByte != nil {
-		upload, mimeType, _ := uploadMedia(WAClient, header.MediaByte, &UploadMediaOptions{})
-		thumbnail, err := ResizeImage(header.MediaByte, 72, 72)
-		if err != nil {
-			thumbnail = []byte{}
-		}
-		mountedMessage.InteractiveMessage.Header = &waProto.InteractiveMessage_Header{
-			Title: proto.String(header.Title),
-			Subtitle: proto.String(header.Subtitle),
-			HasMediaAttachment: proto.Bool(header.HasMediaAttachment),
-			Media: &waProto.InteractiveMessage_Header_ImageMessage{
-				ImageMessage: &waProto.ImageMessage{
-					Mimetype:      proto.String(mimeType),
-					Url:           &upload.URL,
-					DirectPath:    &upload.DirectPath,
-					MediaKey:      upload.MediaKey,
-					JpegThumbnail: thumbnail,
-					FileEncSha256: upload.FileEncSHA256,
-					FileSha256:    upload.FileSHA256,
-					FileLength:    &upload.FileLength,
-				},
-			},
-		}
-	}
-	sendedMsg, err := WAClient.SendMessage(
-		context.Background(),
-		jid.ToNonAD(),
-		mountedMessage,
-	)
-	return sendedMsg, mountedMessage, err
-}
-func SendTextMessage(WAClient *whatsmeow.Client, jid waTypes.JID, body string, options *MessageOptions) (resp whatsmeow.SendResponse, mountedMessage *waProto.Message, err error) {
+func SendTextMessage(WAClient *whatsmeow.Client, jid waTypes.JID, body string, options *MessageOptions) (resp whatsmeow.SendResponse, mountedMessage *waE2E.Message, err error) {
 	if options.QuotedMessage == nil {
-		mountedMessage = &waProto.Message{
+		mountedMessage = &waE2E.Message{
 			Conversation: proto.String(body),
 		}
 		sendedMsg, err := WAClient.SendMessage(
@@ -235,17 +99,17 @@ func SendTextMessage(WAClient *whatsmeow.Client, jid waTypes.JID, body string, o
 	}
 	user := options.QuotedMessage.Info.Sender.ToNonAD().String()
 	var mentionedJid []string
-	if options.ContextInfo != nil && options.ContextInfo.MentionedJid != nil {
-		mentionedJid = options.ContextInfo.MentionedJid
+	if options.ContextInfo != nil && options.ContextInfo.MentionedJID != nil {
+		mentionedJid = options.ContextInfo.MentionedJID
 	}
-	mountedMessage = &waProto.Message{
-		ExtendedTextMessage: &waProto.ExtendedTextMessage{
+	mountedMessage = &waE2E.Message{
+		ExtendedTextMessage: &waE2E.ExtendedTextMessage{
 			Text: proto.String(body),
-			ContextInfo: &waProto.ContextInfo{
+			ContextInfo: &waE2E.ContextInfo{
 				QuotedMessage: options.QuotedMessage.Message,
 				Participant:   &user,
-				StanzaId:      &options.QuotedMessage.Info.ID,
-				MentionedJid:  mentionedJid,
+				StanzaID:      &options.QuotedMessage.Info.ID,
+				MentionedJID:  mentionedJid,
 			},
 		},
 	}
@@ -257,7 +121,7 @@ func SendTextMessage(WAClient *whatsmeow.Client, jid waTypes.JID, body string, o
 	return sendedMsg, mountedMessage, err
 }
 
-func EditMessage(WAClient *whatsmeow.Client, jid waTypes.JID, keyId string, newText string, message *waProto.Message) (resp whatsmeow.SendResponse, err error) {
+func EditMessage(WAClient *whatsmeow.Client, jid waTypes.JID, keyId string, newText string, message *waE2E.Message) (resp whatsmeow.SendResponse, err error) {
 	messageType := infra_whatsmeow_utils.GetMessageType(message)
 	switch messageType {
 	case "text":
@@ -276,19 +140,19 @@ func EditMessage(WAClient *whatsmeow.Client, jid waTypes.JID, keyId string, newT
 	return WAClient.SendMessage(
 		context.Background(),
 		jid,
-		&waProto.Message{
-			ProtocolMessage: &waProto.ProtocolMessage{
-				Key: &waProto.MessageKey{
+		&waE2E.Message{
+			ProtocolMessage: &waE2E.ProtocolMessage{
+				Key: &waCommon.MessageKey{
 					FromMe:      proto.Bool(true),
-					RemoteJid:   proto.String(jid.ToNonAD().String()),
-					Id:          &keyId,
+					RemoteJID:   proto.String(jid.ToNonAD().String()),
+					ID:          &keyId,
 					Participant: proto.String(WAClient.Store.ID.ToNonAD().String()),
 				},
-				Type:                      waProto.ProtocolMessage_MESSAGE_EDIT.Enum(),
+				Type:                      waE2E.ProtocolMessage_MESSAGE_EDIT.Enum(),
 				EphemeralExpiration:       proto.Uint32(0),
 				EphemeralSettingTimestamp: proto.Int64(0),
 				EditedMessage:             message,
-				TimestampMs:               proto.Int64(0),
+				TimestampMS:               proto.Int64(0),
 			},
 		},
 	)
@@ -347,15 +211,15 @@ func SendImageMessage(WAClient *whatsmeow.Client, jid waTypes.JID, caption strin
 		return WAClient.SendMessage(
 			context.Background(),
 			jid.ToNonAD(),
-			&waProto.Message{
-				ImageMessage: &waProto.ImageMessage{
+			&waE2E.Message{
+				ImageMessage: &waE2E.ImageMessage{
 					Mimetype:      proto.String(mimeType),
-					Url:           &upload.URL,
+					URL:           &upload.URL,
 					DirectPath:    &upload.DirectPath,
 					MediaKey:      upload.MediaKey,
-					JpegThumbnail: thumbnail,
-					FileEncSha256: upload.FileEncSHA256,
-					FileSha256:    upload.FileSHA256,
+					JPEGThumbnail: thumbnail,
+					FileEncSHA256: upload.FileEncSHA256,
+					FileSHA256:    upload.FileSHA256,
 					FileLength:    &upload.FileLength,
 					Caption:       proto.String(caption),
 				},
@@ -366,21 +230,21 @@ func SendImageMessage(WAClient *whatsmeow.Client, jid waTypes.JID, caption strin
 	return WAClient.SendMessage(
 		context.Background(),
 		jid.ToNonAD(),
-		&waProto.Message{
-			ImageMessage: &waProto.ImageMessage{
+		&waE2E.Message{
+			ImageMessage: &waE2E.ImageMessage{
 				Mimetype:      proto.String(mimeType),
-				Url:           &upload.URL,
+				URL:           &upload.URL,
 				DirectPath:    &upload.DirectPath,
 				MediaKey:      upload.MediaKey,
-				FileEncSha256: upload.FileEncSHA256,
-				FileSha256:    upload.FileSHA256,
+				FileEncSHA256: upload.FileEncSHA256,
+				FileSHA256:    upload.FileSHA256,
 				Caption:       proto.String(caption),
 				FileLength:    &upload.FileLength,
-				JpegThumbnail: thumbnail,
-				ContextInfo: &waProto.ContextInfo{
+				JPEGThumbnail: thumbnail,
+				ContextInfo: &waE2E.ContextInfo{
 					QuotedMessage: options.QuotedMessage.Message,
 					Participant:   &user,
-					StanzaId:      &options.QuotedMessage.Info.ID,
+					StanzaID:      &options.QuotedMessage.Info.ID,
 				},
 			},
 		},
@@ -402,16 +266,16 @@ func SendVideoMessage(WAClient *whatsmeow.Client, jid waTypes.JID, caption strin
 		return WAClient.SendMessage(
 			context.Background(),
 			jid.ToNonAD(),
-			&waProto.Message{
-				VideoMessage: &waProto.VideoMessage{
+			&waE2E.Message{
+				VideoMessage: &waE2E.VideoMessage{
 					Mimetype:      proto.String(mimeType),
-					Url:           &upload.URL,
+					URL:           &upload.URL,
 					DirectPath:    &upload.DirectPath,
 					MediaKey:      upload.MediaKey,
-					FileEncSha256: upload.FileEncSHA256,
-					FileSha256:    upload.FileSHA256,
+					FileEncSHA256: upload.FileEncSHA256,
+					FileSHA256:    upload.FileSHA256,
 					FileLength:    &upload.FileLength,
-					JpegThumbnail: thumbnail,
+					JPEGThumbnail: thumbnail,
 					Caption:       proto.String(caption),
 					GifPlayback:   proto.Bool(options.GifPlayback),
 				},
@@ -422,22 +286,22 @@ func SendVideoMessage(WAClient *whatsmeow.Client, jid waTypes.JID, caption strin
 	return WAClient.SendMessage(
 		context.Background(),
 		jid.ToNonAD(),
-		&waProto.Message{
-			VideoMessage: &waProto.VideoMessage{
+		&waE2E.Message{
+			VideoMessage: &waE2E.VideoMessage{
 				Mimetype:      proto.String(mimeType),
-				Url:           &upload.URL,
+				URL:           &upload.URL,
 				DirectPath:    &upload.DirectPath,
 				MediaKey:      upload.MediaKey,
-				FileEncSha256: upload.FileEncSHA256,
-				FileSha256:    upload.FileSHA256,
+				FileEncSHA256: upload.FileEncSHA256,
+				FileSHA256:    upload.FileSHA256,
 				Caption:       proto.String(caption),
-				JpegThumbnail: thumbnail,
+				JPEGThumbnail: thumbnail,
 				FileLength:    &upload.FileLength,
 				GifPlayback:   proto.Bool(options.GifPlayback),
-				ContextInfo: &waProto.ContextInfo{
+				ContextInfo: &waE2E.ContextInfo{
 					QuotedMessage: options.QuotedMessage.Message,
 					Participant:   &user,
-					StanzaId:      &options.QuotedMessage.Info.ID,
+					StanzaID:      &options.QuotedMessage.Info.ID,
 				},
 			},
 		},
@@ -463,15 +327,15 @@ func SendAudioMessage(WAClient *whatsmeow.Client, jid waTypes.JID, audio []byte,
 		return WAClient.SendMessage(
 			context.Background(),
 			jid.ToNonAD(),
-			&waProto.Message{
-				AudioMessage: &waProto.AudioMessage{
+			&waE2E.Message{
+				AudioMessage: &waE2E.AudioMessage{
 					Mimetype:      proto.String(mimeType),
-					Url:           &upload.URL,
+					URL:           &upload.URL,
 					DirectPath:    &upload.DirectPath,
-					Ptt:           proto.Bool(options.Ptt),
+					PTT:           proto.Bool(options.Ptt),
 					MediaKey:      upload.MediaKey,
-					FileEncSha256: upload.FileEncSHA256,
-					FileSha256:    upload.FileSHA256,
+					FileEncSHA256: upload.FileEncSHA256,
+					FileSHA256:    upload.FileSHA256,
 					FileLength:    &upload.FileLength,
 					ContextInfo:   options.ContextInfo,
 				},
@@ -482,20 +346,20 @@ func SendAudioMessage(WAClient *whatsmeow.Client, jid waTypes.JID, audio []byte,
 	return WAClient.SendMessage(
 		context.Background(),
 		jid.ToNonAD(),
-		&waProto.Message{
-			AudioMessage: &waProto.AudioMessage{
+		&waE2E.Message{
+			AudioMessage: &waE2E.AudioMessage{
 				Mimetype:      proto.String(mimeType),
-				Url:           &upload.URL,
+				URL:           &upload.URL,
 				DirectPath:    &upload.DirectPath,
 				MediaKey:      upload.MediaKey,
-				FileEncSha256: upload.FileEncSHA256,
-				Ptt:           proto.Bool(options.Ptt),
-				FileSha256:    upload.FileSHA256,
+				FileEncSHA256: upload.FileEncSHA256,
+				PTT:           proto.Bool(options.Ptt),
+				FileSHA256:    upload.FileSHA256,
 				FileLength:    &upload.FileLength,
-				ContextInfo: &waProto.ContextInfo{
+				ContextInfo: &waE2E.ContextInfo{
 					QuotedMessage: options.QuotedMessage.Message,
 					Participant:   &user,
-					StanzaId:      &options.QuotedMessage.Info.ID,
+					StanzaID:      &options.QuotedMessage.Info.ID,
 				},
 			},
 		},
@@ -513,14 +377,14 @@ func SendStickerMessage(WAClient *whatsmeow.Client, jid waTypes.JID, sticker []b
 		return WAClient.SendMessage(
 			context.Background(),
 			jid.ToNonAD(),
-			&waProto.Message{
-				StickerMessage: &waProto.StickerMessage{
+			&waE2E.Message{
+				StickerMessage: &waE2E.StickerMessage{
 					Mimetype:      proto.String(mimeType),
-					Url:           &upload.URL,
+					URL:           &upload.URL,
 					DirectPath:    &upload.DirectPath,
 					MediaKey:      upload.MediaKey,
-					FileEncSha256: upload.FileEncSHA256,
-					FileSha256:    upload.FileSHA256,
+					FileEncSHA256: upload.FileEncSHA256,
+					FileSHA256:    upload.FileSHA256,
 					FileLength:    &upload.FileLength,
 					ContextInfo:   options.ContextInfo,
 				},
@@ -531,19 +395,19 @@ func SendStickerMessage(WAClient *whatsmeow.Client, jid waTypes.JID, sticker []b
 	return WAClient.SendMessage(
 		context.Background(),
 		jid.ToNonAD(),
-		&waProto.Message{
-			StickerMessage: &waProto.StickerMessage{
+		&waE2E.Message{
+			StickerMessage: &waE2E.StickerMessage{
 				Mimetype:      proto.String(mimeType),
-				Url:           &upload.URL,
+				URL:           &upload.URL,
 				DirectPath:    &upload.DirectPath,
 				MediaKey:      upload.MediaKey,
-				FileEncSha256: upload.FileEncSHA256,
-				FileSha256:    upload.FileSHA256,
+				FileEncSHA256: upload.FileEncSHA256,
+				FileSHA256:    upload.FileSHA256,
 				FileLength:    &upload.FileLength,
-				ContextInfo: &waProto.ContextInfo{
+				ContextInfo: &waE2E.ContextInfo{
 					QuotedMessage: options.QuotedMessage.Message,
 					Participant:   &user,
-					StanzaId:      &options.QuotedMessage.Info.ID,
+					StanzaID:      &options.QuotedMessage.Info.ID,
 				},
 			},
 		},
@@ -563,14 +427,14 @@ func SendDocumentMessage(WAClient *whatsmeow.Client, jid waTypes.JID, FileName s
 		return WAClient.SendMessage(
 			context.Background(),
 			jid.ToNonAD(),
-			&waProto.Message{
-				DocumentMessage: &waProto.DocumentMessage{
+			&waE2E.Message{
+				DocumentMessage: &waE2E.DocumentMessage{
 					Mimetype:      proto.String(mimeType),
-					Url:           &upload.URL,
+					URL:           &upload.URL,
 					DirectPath:    &upload.DirectPath,
 					MediaKey:      upload.MediaKey,
-					FileEncSha256: upload.FileEncSHA256,
-					FileSha256:    upload.FileSHA256,
+					FileEncSHA256: upload.FileEncSHA256,
+					FileSHA256:    upload.FileSHA256,
 					FileLength:    &upload.FileLength,
 					ContextInfo:   options.ContextInfo,
 					Title:         proto.String(options.Title),
@@ -584,22 +448,22 @@ func SendDocumentMessage(WAClient *whatsmeow.Client, jid waTypes.JID, FileName s
 	return WAClient.SendMessage(
 		context.Background(),
 		jid.ToNonAD(),
-		&waProto.Message{
-			DocumentMessage: &waProto.DocumentMessage{
+		&waE2E.Message{
+			DocumentMessage: &waE2E.DocumentMessage{
 				Mimetype:      proto.String(mimeType),
-				Url:           &upload.URL,
+				URL:           &upload.URL,
 				DirectPath:    &upload.DirectPath,
 				MediaKey:      upload.MediaKey,
-				FileEncSha256: upload.FileEncSHA256,
-				FileSha256:    upload.FileSHA256,
+				FileEncSHA256: upload.FileEncSHA256,
+				FileSHA256:    upload.FileSHA256,
 				FileLength:    &upload.FileLength,
 				Title:         proto.String(options.Title),
 				FileName:      proto.String(FileName),
 				Caption:       proto.String(body),
-				ContextInfo: &waProto.ContextInfo{
+				ContextInfo: &waE2E.ContextInfo{
 					QuotedMessage: options.QuotedMessage.Message,
 					Participant:   &user,
-					StanzaId:      &options.QuotedMessage.Info.ID,
+					StanzaID:      &options.QuotedMessage.Info.ID,
 				},
 			},
 		},
@@ -610,15 +474,15 @@ func SendProtocolDeleteMessage(WAClient *whatsmeow.Client, jid waTypes.JID, user
 	return WAClient.SendMessage(
 		context.Background(),
 		jid.ToNonAD(),
-		&waProto.Message{
-			ProtocolMessage: &waProto.ProtocolMessage{
-				Key: &waProto.MessageKey{
+		&waE2E.Message{
+			ProtocolMessage: &waE2E.ProtocolMessage{
+				Key: &waCommon.MessageKey{
 					FromMe:      proto.Bool(!everyone),
-					Id:          proto.String(messageID),
-					RemoteJid:   proto.String(jid.ToNonAD().String()),
+					ID:          proto.String(messageID),
+					RemoteJID:   proto.String(jid.ToNonAD().String()),
 					Participant: proto.String(user.ToNonAD().String()),
 				},
-				Type: waProto.ProtocolMessage_REVOKE.Enum(),
+				Type: waE2E.ProtocolMessage_REVOKE.Enum(),
 			},
 		},
 	)

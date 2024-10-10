@@ -10,12 +10,12 @@ import (
 	"tomoribot-geminiai-version/src/handlers/actions"
 	infra_whatsmeow_utils "tomoribot-geminiai-version/src/infra/whatsapp/whatsmeow/utils"
 
-	"go.mau.fi/whatsmeow/binary/proto"
 	"go.mau.fi/whatsmeow/types"
+	"go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/types/events"
 )
 
-func IsMentionedBot(QuotedMsgContextInfo *proto.ContextInfo, botJid types.JID) bool {
+func IsMentionedBot(QuotedMsgContextInfo *waE2E.ContextInfo, botJid types.JID) bool {
 	if QuotedMsgContextInfo == nil {
 		return false
 	}

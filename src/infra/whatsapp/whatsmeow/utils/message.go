@@ -9,11 +9,11 @@ import (
 	"strings"
 	domain_models_device "tomoribot-geminiai-version/src/domain/models/device"
 
-	waProto "go.mau.fi/whatsmeow/binary/proto"
+	"go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/types"
 )
 
-func GetMessageBody(v *waProto.Message) string {
+func GetMessageBody(v *waE2E.Message) string {
 	message_type := GetMessageType(v)
 	var message_content string = ""
 
@@ -101,9 +101,9 @@ func GetMessageBody(v *waProto.Message) string {
 	case "interactiveResponseMessage":
 		if v.GetInteractiveResponseMessage() != nil {
 			interactiveResponseMessage := v.GetInteractiveResponseMessage()
-			getInteractiveResponseMessage := interactiveResponseMessage.GetInteractiveResponseMessage().(*waProto.InteractiveResponseMessage_NativeFlowResponseMessage_)
-			if getInteractiveResponseMessage != nil && getInteractiveResponseMessage.NativeFlowResponseMessage != nil && getInteractiveResponseMessage.NativeFlowResponseMessage.ParamsJson != nil {
-				jsonMsg := *getInteractiveResponseMessage.NativeFlowResponseMessage.ParamsJson
+			getInteractiveResponseMessage := interactiveResponseMessage.GetInteractiveResponseMessage().(*waE2E.InteractiveResponseMessage_NativeFlowResponseMessage_)
+			if getInteractiveResponseMessage != nil && getInteractiveResponseMessage.NativeFlowResponseMessage != nil && getInteractiveResponseMessage.NativeFlowResponseMessage.ParamsJSON != nil {
+				jsonMsg := *getInteractiveResponseMessage.NativeFlowResponseMessage.ParamsJSON
 				type ParamsJson struct {
 					ID          string `json:"id"`
 					Description string `json:"description"`
@@ -120,7 +120,7 @@ func GetMessageBody(v *waProto.Message) string {
 
 	return message_content
 }
-func GetMessageType(v *waProto.Message) string {
+func GetMessageType(v *waE2E.Message) string {
 	var result string
 
 	switch {
@@ -306,14 +306,14 @@ func LoadMapAdmins(admins []types.JID) map[types.JID]struct{} {
 	return adminMap
 }
 
-func GetQuotedMessage(message *waProto.Message) *waProto.Message {
+func GetQuotedMessage(message *waE2E.Message) *waE2E.Message {
 	if message.ExtendedTextMessage == nil || message.ExtendedTextMessage.ContextInfo == nil || message.ExtendedTextMessage.ContextInfo.QuotedMessage == nil {
 		return nil
 	}
 	return message.ExtendedTextMessage.ContextInfo.QuotedMessage
 }
 
-func GetQuotedMessageContextInfo(message *waProto.Message) *waProto.ContextInfo {
+func GetQuotedMessageContextInfo(message *waE2E.Message) *waE2E.ContextInfo {
 	if message.InteractiveResponseMessage != nil && message.InteractiveResponseMessage.GetInteractiveResponseMessage() != nil {
 		return message.InteractiveResponseMessage.ContextInfo
 	}
