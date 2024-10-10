@@ -9,6 +9,7 @@ import (
 	"tomoribot-geminiai-version/src/commands/sticker2"
 	"tomoribot-geminiai-version/src/commands/tiktok"
 	"tomoribot-geminiai-version/src/commands/tomp3"
+	"tomoribot-geminiai-version/src/commands/tts"
 	"tomoribot-geminiai-version/src/commands/twitter"
 	command_types "tomoribot-geminiai-version/src/commands/types"
 	"tomoribot-geminiai-version/src/commands/ytmp3"
@@ -26,6 +27,7 @@ var Commands = map[string]command_types.Command{
 	"sticker2": {Execute: sticker2.Execute, Details: sticker2.Details()},
 	"twitter": {Execute: twitter.Execute, Details: twitter.Details()},
 	"tiktok": {Execute: tiktok.Execute, Details: tiktok.Details()},
+	"tts": {Execute: tts.Execute, Details: tts.Details()},
 }
 
 func LoadCommands() []command_types.Command {
