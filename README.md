@@ -61,6 +61,7 @@ O TomoriBOT foi desenvolvido para ser eficiente e rápido, permitindo que os usu
 Para instalar o TomoriBOT, você precisa ter o Node.js, Python, FFmpeg e o Go instalados em sua máquina. Após isso, basta clonar o repositório e instalar as dependências.
 
 ```bash
+$ sudo apt-get install pkg-config libasound2-dev
 # Clone o repositório
 $ git clone https://github.com/viniciusgdr/TomoriBOTGemini
 $ cd TomoriBOTGemini
